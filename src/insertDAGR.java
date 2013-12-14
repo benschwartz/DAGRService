@@ -22,12 +22,10 @@ public class insertDAGR extends ServerResource {
 		Form form = new Form(entity);
 		String dagrJson = form.getFirstValue("dagr");
 		DAGR dagr = new Gson().fromJson(dagrJson, DAGR.class);
-		Utils.connect();
 		if(!Utils.insertDAGR(dagr)){
 			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
 			return generateErrorRepresentation("Could not insert DAGR", "1");
 		}
-		Utils.disconnnect();
 		return result;
 	}
 	/**

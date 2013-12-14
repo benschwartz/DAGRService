@@ -14,6 +14,10 @@ import java.util.logging.Logger;
 
 public class Utils {
 	private static Logger LOGGER = Logger.getLogger("DAGR");
+	private static final String URL;
+	private static final String user;
+	private static final String password;
+	private static Connection conn = null;
 
 	static {
 		try {
@@ -22,11 +26,6 @@ public class Utils {
 				| ClassNotFoundException e) {
 			throw new ExceptionInInitializerError(e);
 		}
-	}
-
-	private static Connection conn = null;
-
-	static {
 		Properties props = new Properties();
 		InputStream iStream = Utils.class
 				.getResourceAsStream("creds.properties");
@@ -44,10 +43,9 @@ public class Utils {
 		URL = props.getProperty("URL");
 		user = props.getProperty("user");
 		password = props.getProperty("password");
+		connect();
 	}
-	private static final String URL;
-	private static final String user;
-	private static final String password;
+	
 
 	public static boolean connect() {
 		if (conn != null) {
@@ -100,6 +98,8 @@ public class Utils {
 		} catch (SQLException e) {
 			LOGGER.log(Level.SEVERE,
 					"Could not determine if the object is in the DAGR", e);
+			disconnnect();
+			connect();
 			return false;
 		}
 		if (existingGUID != null) {
@@ -163,6 +163,8 @@ public class Utils {
 		} catch (SQLException e) {
 			LOGGER.log(Level.SEVERE, "Could not insert DAGR with GUID " + GUID,
 					e);
+			disconnnect();
+			connect();
 			return false;
 		}
 	}
@@ -285,5 +287,9 @@ public class Utils {
 		}
 		sql.append(";");
 		return sql.toString();
+	}
+	
+	public static void main(String args[]){
+		
 	}
 }

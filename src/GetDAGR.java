@@ -11,7 +11,7 @@ public class GetDAGR extends ServerResource {
 	public String represent() {
 		StringBuilder response = new StringBuilder();
 		List<DAGR> dagrs = getDAGRList();
-		response.append("Query returned " + dagrs.size() + " results:\n");
+		//response.append("Query returned " + dagrs.size() + " results:\n");
 		for(DAGR dagr: dagrs){
 			response.append(new Gson().toJson(dagr) + "\n");
 		}
@@ -28,11 +28,8 @@ public class GetDAGR extends ServerResource {
 		String size = getQueryValue("size");
 		String createTime = getQueryValue("time_created");
 		String modifiedTime = getQueryValue("time_modified");
-		Utils.connect();
 		List<DAGR> DAGRs = Utils.getDAGRs(GUID, parentGUID, location, type,
 				author, name, size, createTime, modifiedTime);
-		
-		Utils.disconnnect();
 		return DAGRs;
 	}
 }
