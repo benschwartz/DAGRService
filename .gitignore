@@ -1,0 +1,6 @@
+/.git
+/.settings
+/build
+.classpath
+.project
+src/creds.properties

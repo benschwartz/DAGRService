@@ -4,9 +4,6 @@ public class DAGR {
 	public void setGUID(String gUID) {
 		GUID = gUID;
 	}
-	public void setParentGUID(String parentGUID) {
-		this.parentGUID = parentGUID;
-	}
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -28,7 +25,6 @@ public class DAGR {
 	public void setType(String type) {
 		this.type = type;
 	}
-	private String parentGUID;
 	private String name;
 	private String location;
 	private String author;
@@ -40,11 +36,10 @@ public class DAGR {
 	public DAGR(){
 		
 	}
-	public DAGR(String gUID, String parentGUID, String name, String location,
+	public DAGR(String gUID, String name, String location,
 			String author, Long createTime, Long modifiedTime, Long size,
 			String type) {
 		GUID = gUID;
-		this.parentGUID = parentGUID;
 		this.name = name;
 		this.location = location;
 		this.author = author;
@@ -56,9 +51,6 @@ public class DAGR {
 	public String getGUID() {
 		return GUID;
 	}
-	public String getParentGUID() {
-		return parentGUID;
-	}
 	public String getName() {
 		return name;
 	}
@@ -68,13 +60,49 @@ public class DAGR {
 	public String getAuthor() {
 		return author;
 	}
-	public long getCreateTime() {
+	public Long getCreateTime() {
 		return createTime;
 	}
-	public long getModifiedTime() {
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((GUID == null) ? 0 : GUID.hashCode());
+		result = prime * result
+				+ ((location == null) ? 0 : location.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DAGR other = (DAGR) obj;
+		if (GUID == null) {
+			if (other.GUID != null)
+				return false;
+		} else if (!GUID.equals(other.GUID))
+			return false;
+		if (location == null) {
+			if (other.location != null)
+				return false;
+		} else if (!location.equals(other.location))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+	public Long getModifiedTime() {
 		return modifiedTime;
 	}
-	public long getSize() {
+	public Long getSize() {
 		return size;
 	}
 	public String getType() {

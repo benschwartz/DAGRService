@@ -1,67 +1,57 @@
-import java.io.IOException;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.xml.DomRepresentation;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Options;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
-
-public class insertDAGR extends ServerResource {
-	@Post("json")
+public class InsertDAGR extends ServerResource {
+	Logger LOGGER = Logger.getLogger("DAGR");
+	@Post("text/plain|text/xml")
+	@Options("text/plain|text/xml")
 	public Representation acceptItem(Representation entity) {
-		Representation result = null;
+		DAGRApplication.fixResponseHeader(getResponse());
 		// Parse the given representation and retrieve pairs of
 		// "name=value" tokens.
-		Form form = new Form(entity);
-		String dagrJson = form.getFirstValue("dagr");
-		DAGR dagr = new Gson().fromJson(dagrJson, DAGR.class);
-		if(!Utils.insertDAGR(dagr)){
-			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-			return generateErrorRepresentation("Could not insert DAGR", "1");
+		String dagrJson = getQuery().getFirstValue("dagr");
+		String parentGUID = getQuery().getFirstValue("parent");
+		if (dagrJson == null || parentGUID == null) {
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "missing parameter");
+			return new EmptyRepresentation();
 		}
-		return result;
-	}
-	/**
-	 * Generate an XML representation of an error response.
-	 * 
-	 * @param errorMessage
-	 *            the error message.
-	 * @param errorCode
-	 *            the error code.
-	 */
-	private Representation generateErrorRepresentation(String errorMessage,
-			String errorCode) {
-		DomRepresentation result = null;
-		// This is an error
-		// Generate the output representation
-		try {
-			result = new DomRepresentation(MediaType.TEXT_XML);
-			// Generate a DOM document representing the list of
-			// items.
-			Document d = result.getDocument();
-
-			Element eltError = d.createElement("error");
-
-			Element eltCode = d.createElement("code");
-			eltCode.appendChild(d.createTextNode(errorCode));
-			eltError.appendChild(eltCode);
-
-			Element eltMessage = d.createElement("message");
-			eltMessage.appendChild(d.createTextNode(errorMessage));
-			eltError.appendChild(eltMessage);
-		} catch (IOException e) {
-			e.printStackTrace();
+		DAGR dagr;
+		try{
+			dagr = new Gson().fromJson(dagrJson, DAGR.class);
 		}
-
-		return result;
+		catch(JsonParseException e){
+			LOGGER.log(Level.SEVERE,"Could not parse DAGR JSON:" + dagrJson);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Could not parse DAGR JSON");
+			return new EmptyRepresentation();
+		}
+		if(dagr.getAuthor()==null || dagr.getCreateTime()==null || dagr.getLocation()==null || dagr.getModifiedTime()==null || dagr.getName()==null || dagr.getSize()==null || dagr.getType()==null){
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "missing members of dagr");
+			LOGGER.log(Level.SEVERE,"Missing members of dagr:" + dagrJson);
+			return new EmptyRepresentation();
+		}
+		if (dagr.getGUID() == null) {
+			dagr.setGUID(UUID.randomUUID().toString());
+		}
+		String GUID = Utils.insertDAGR(dagr, parentGUID);
+		if (GUID == null) {
+			LOGGER.log(Level.SEVERE,"Could not insert DAGR:" + dagrJson + " " + parentGUID);
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Could not insert DAGR");
+			return new EmptyRepresentation();
+		}
+		return new StringRepresentation(GUID, MediaType.TEXT_PLAIN);
 	}
-	
-	
+
 }
